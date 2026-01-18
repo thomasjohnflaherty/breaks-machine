@@ -205,3 +205,28 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Claude Code
+# Keep: .claude/CLAUDE.md and .claude/rules/ (project documentation)
+# Ignore: personal settings, credentials, and generated files
+.claude/.credentials.json
+.claude/history.jsonl
+.claude/settings.json
+.claude/settings.local.json
+.claude/cache/
+.claude/debug/
+.claude/file-history/
+.claude/ide/
+.claude/plans/
+.claude/plugins/
+.claude/projects/
+.claude/session-env/
+.claude/shell-snapshots/
+.claude/statsig/
+.claude/todos/
+
+# Devcontainer
+# Keep: devcontainer.json configurations
+# Ignore: generated/runtime files
+.devcontainer*/.env
+.devcontainer*/docker-compose.override.yml

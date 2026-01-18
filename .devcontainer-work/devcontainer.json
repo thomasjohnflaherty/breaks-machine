@@ -1,0 +1,39 @@
+{
+    "image": "mcr.microsoft.com/devcontainers/python:3.13",
+
+    "features": {
+        "ghcr.io/jsburckhardt/devcontainer-features/uv:1": {},
+        "ghcr.io/jsburckhardt/devcontainer-features/ruff:1": {},
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "20"
+        }
+    },
+
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-toolsai.jupyter",
+                "anthropic.claude-code"
+            ]
+        }
+    },
+
+    "mounts": [
+        "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
+        "source=${localWorkspaceFolder}/.claude,target=/home/vscode/.claude,type=bind",
+        "source=${localWorkspaceFolder}/.claude.json,target=/home/vscode/.claude.json,type=bind"
+    ],
+
+    // Pass ANTHROPIC_API_KEY from host to container and set Claude config directory
+    "remoteEnv": {
+        "ANTHROPIC_API_KEY": "${localEnv:ANTHROPIC_API_KEY}",
+        "CLAUDE_CONFIG_DIR": "/home/vscode/.claude"
+    },
+
+    "remoteUser": "vscode",
+
+    "postCreateCommand": "sudo apt-get update && sudo apt-get install -y ffmpeg && npm install -g @anthropic-ai/claude-code && sudo chown -R vscode:vscode /home/vscode/.claude && mkdir -p ~/.claude && echo 'echo $ANTHROPIC_API_KEY' > ~/.claude/api_key_helper.sh && chmod +x ~/.claude/api_key_helper.sh && echo '{\"apiKeyHelper\": \"/home/vscode/.claude/api_key_helper.sh\"}' > ~/.claude/settings.json && uv sync --group dev",
+
+    "postAttachCommand": "mkdir -p ~/.ssh && chmod 700 ~/.ssh && find ~/.ssh -maxdepth 1 -type f -exec chmod 600 {} + 2>/dev/null || true"
+}
