@@ -46,7 +46,7 @@ class TestGenerateOutputPath:
 
         result = generate_output_path(input_path, output_dir, 120)
 
-        assert result == Path("/output/amen_170/amen_170_120bpm.wav")
+        assert result == Path("/output/amen_170/amen_120.wav")
 
     def test_preserves_extension(self):
         """Test that original extension is preserved."""
@@ -55,7 +55,7 @@ class TestGenerateOutputPath:
 
         result = generate_output_path(input_path, output_dir, 90)
 
-        assert result == Path("/output/break/break_90bpm.flac")
+        assert result == Path("/output/break/break_90.flac")
 
     def test_float_bpm_truncated(self):
         """Test that float BPM is truncated to int."""
@@ -64,7 +64,7 @@ class TestGenerateOutputPath:
 
         result = generate_output_path(input_path, output_dir, 120.5)
 
-        assert result == Path("/output/test/test_120bpm.wav")
+        assert result == Path("/output/test/test_120.wav")
 
 
 class TestParseTargets:

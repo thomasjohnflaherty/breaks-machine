@@ -1,5 +1,6 @@
 """Pipeline orchestration for processing drum breaks."""
 
+import re
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -34,6 +35,29 @@ def is_audio_file(path: Path) -> bool:
     return path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS
 
 
+def strip_bpm_from_filename(filename: str) -> str:
+    """
+    Remove BPM suffix from filename.
+
+    Examples:
+        amen_170 -> amen
+        break-140bpm -> break
+        loop_160_BPM -> loop
+        funky_break -> funky_break (no change)
+    """
+    # Pattern 1: number followed by optional separator and "bpm" (case insensitive)
+    # e.g., "140bpm", "140-bpm", "140_BPM", "140 bpm"
+    pattern_with_bpm = r"[\s_-]?(\d{2,3})[\s_-]?bpm"
+    result = re.sub(pattern_with_bpm, "", filename, flags=re.IGNORECASE)
+
+    # Pattern 2: underscore/hyphen followed by 2-3 digit number at end
+    # e.g., "_170", "-85" at the end
+    pattern_trailing = r"[_-](\d{2,3})$"
+    result = re.sub(pattern_trailing, "", result)
+
+    return result
+
+
 def generate_output_path(
     input_path: Path,
     output_dir: Path,
@@ -42,12 +66,20 @@ def generate_output_path(
     """
     Generate output path following the naming convention.
 
-    Structure: output_dir/{filename}/{filename}_{target_bpm}bpm.{ext}
+    Structure: output_dir/{original_filename}/{basename}_{target_bpm}.{ext}
+
+    Examples:
+        amen_170.wav @ 140 -> output/amen_170/amen_140.wav
+        funky_break.wav @ 120 -> output/funky_break/funky_break_120.wav
     """
     stem = input_path.stem
     ext = input_path.suffix
     folder = output_dir / stem
-    filename = f"{stem}_{int(target_bpm)}bpm{ext}"
+
+    # Strip BPM from filename before adding target BPM
+    base_name = strip_bpm_from_filename(stem)
+    filename = f"{base_name}_{int(target_bpm)}{ext}"
+
     return folder / filename
 
 

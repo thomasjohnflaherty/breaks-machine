@@ -52,7 +52,7 @@ class TestCliStretch:
         assert "Created 1 file" in result.output
 
         # Check output file exists
-        expected_output = output_dir / "amen_170" / "amen_170_120bpm.wav"
+        expected_output = output_dir / "amen_170" / "amen_120.wav"
         assert expected_output.exists()
 
     def test_multiple_targets(self, runner, temp_audio_file_170bpm, tmp_path):
