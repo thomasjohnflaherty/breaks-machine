@@ -225,8 +225,6 @@ __marimo__/
 .claude/statsig/
 .claude/todos/
 
-# Devcontainer
-# Keep: devcontainer.json configurations
-# Ignore: generated/runtime files
-.devcontainer*/.env
-.devcontainer*/docker-compose.override.yml
+# Devcontainer (optional for local development, not committed)
+.devcontainer/
+.devcontainer-*/

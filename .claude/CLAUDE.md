@@ -120,11 +120,28 @@ This significantly improved accuracy on complex breaks like the Amen break (now 
 
 ### System Dependencies
 
-These are installed automatically in the devcontainer:
+Required for time-stretching functionality:
 
 - **rubberband-cli**: The actual time-stretching engine
 - **libsndfile1**: Audio file I/O library
 - **ffmpeg**: Audio codec support
+
+**Installation:**
+
+**macOS:**
+```bash
+brew install rubberband
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get install rubberband-cli libsndfile1 ffmpeg
+```
+
+**Windows:**
+Download from https://breakfastquay.com/rubberband/ and add to PATH.
+
+**Optional: Use devcontainer** - Copy `.devcontainer-template/` to `.devcontainer/` for automatic setup.
 
 ## Quick Reference
 
@@ -167,7 +184,7 @@ breaks-machine stretch break.wav --bpm 175 -t 140
 - `src/breaks_machine/` - Source code
 - `tests/` - Test suite
 - `breaks/` - Test audio files for manual testing
-- `.devcontainer/devcontainer.json` - Development environment config
+- `.devcontainer-template/` - Optional devcontainer configuration
 - `.github/workflows/ci.yml` - CI/CD pipeline configuration
 
 ## Detailed Documentation
@@ -176,15 +193,12 @@ For more information about the development environment and tooling:
 
 - **uv quick reference**: [.claude/rules/uv-guide.md](rules/uv-guide.md)
 - **CI/CD pipeline**: [.claude/rules/cicd.md](rules/cicd.md)
-- **Customization**: [.claude/rules/customization.md](rules/customization.md)
 - **Troubleshooting**: [.claude/rules/troubleshooting.md](rules/troubleshooting.md)
-- **Claude Code setup**: [.claude/rules/claude-code-setup.md](rules/claude-code-setup.md)
-- **SSH keys**: [.claude/rules/ssh-setup.md](rules/ssh-setup.md)
 
 ## Project Principles
 
 - **Reproducibility**: `uv.lock` ensures identical dependencies across all environments
-- **Zero-friction onboarding**: Devcontainer handles all setup automatically
-- **Production parity**: Dockerfile uses same base image as devcontainer
+- **Standard Python package**: Installable via pip/uv without Docker
+- **Optional devcontainer**: Available for zero-friction setup if preferred
 - **Quality first**: Comprehensive test suite with 58 tests, all passing
 - **Fast feedback**: Linting and formatting enforced in CI/CD

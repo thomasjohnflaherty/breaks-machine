@@ -13,35 +13,47 @@ Perfect for preparing drum breaks for hardware samplers, live performance, or pr
 - **Format Conversion**: Optional sample rate, bit depth, and channel conversion
 - **Smart Detection**: Multi-strategy BPM detection with subdivision correction for complex breakbeats
 
+## Requirements
+
+### System Dependencies
+
+**Rubberband** is required for time-stretching:
+
+**macOS:**
+```bash
+brew install rubberband
+```
+
+**Ubuntu/Debian:**
+```bash
+sudo apt-get install rubberband-cli libsndfile1 ffmpeg
+```
+
+**Windows:**
+Download Rubberband from [https://breakfastquay.com/rubberband/](https://breakfastquay.com/rubberband/) and add to PATH.
+
+### Python
+
+Python 3.13+ required.
+
 ## Installation
 
-### Prerequisites
+**With uv (recommended):**
+```bash
+uv tool install breaks-machine
+```
 
-- **Docker Desktop** (for running the devcontainer)
-- **VS Code** with the Dev Containers extension
+**With pip:**
+```bash
+pip install breaks-machine
+```
 
-### Setup
-
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/breaks-machine.git
-   cd breaks-machine
-   ```
-
-2. Open in VS Code:
-   ```bash
-   code .
-   ```
-
-3. When prompted, click "Reopen in Container" (or use Command Palette → "Dev Containers: Reopen in Container")
-
-4. The devcontainer will automatically:
-   - Install Python 3.13
-   - Install system dependencies (rubberband-cli, libsndfile1, ffmpeg)
-   - Install Python dependencies via uv
-   - Set up the development environment
-
-That's it! The CLI tool is ready to use.
+**From source:**
+```bash
+git clone https://github.com/yourusername/breaks-machine.git
+cd breaks-machine
+uv sync
+```
 
 ## Quick Start
 
@@ -191,6 +203,45 @@ You can adjust with `--crispness {0-6}` (higher = more transient preservation).
 
 ## Development
 
+### Local Setup
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/yourusername/breaks-machine.git
+   cd breaks-machine
+   ```
+
+2. **Install system dependencies** (see Requirements above)
+
+3. **Install Python dependencies**:
+   ```bash
+   uv sync --group dev
+   ```
+
+4. **Run tests**:
+   ```bash
+   uv run pytest tests
+   ```
+
+### Using Devcontainer (Optional)
+
+For zero-friction setup with all dependencies pre-installed:
+
+1. **Install prerequisites**:
+   - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+   - [VS Code](https://code.visualstudio.com/) with [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
+
+2. **Copy devcontainer template**:
+   ```bash
+   cp -r .devcontainer-template .devcontainer
+   ```
+
+3. **Open in container**:
+   - VS Code → Command Palette → "Dev Containers: Reopen in Container"
+   - Wait for build (first time takes a few minutes)
+
+See [.devcontainer-template/README.md](.devcontainer-template/README.md) for details.
+
 ### Running Tests
 
 ```bash
@@ -258,7 +309,7 @@ tests/
 - **libsndfile1**: Audio file I/O library
 - **ffmpeg**: Audio codec support
 
-All system dependencies are installed automatically in the devcontainer.
+See the Requirements section for platform-specific installation instructions.
 
 ## Contributing
 
