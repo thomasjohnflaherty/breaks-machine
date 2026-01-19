@@ -39,7 +39,7 @@ CLI tool for time-stretching drum breaks to target BPMs while preserving transie
 
 - **[processor.py](../../src/breaks_machine/processor.py)** - Pipeline orchestration
   - Single file and batch directory processing
-  - Output structure: `output/{filename}/{filename}_{bpm}bpm.{ext}`
+  - Output structure: `output/{filename}/{basename}_{bpm}.{ext}`
   - Target parsing (single, multiple, range modes)
 
 ## Development Workflow

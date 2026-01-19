@@ -1,5 +1,11 @@
 # breaks-machine
 
+[![PyPI version](https://badge.fury.io/py/breaks-machine.svg)](https://pypi.org/project/breaks-machine/)
+[![CI](https://github.com/thomasjohnflaherty/breaks-machine/actions/workflows/ci.yml/badge.svg)](https://github.com/thomasjohnflaherty/breaks-machine/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/thomasjohnflaherty/breaks-machine/branch/main/graph/badge.svg)](https://codecov.io/gh/thomasjohnflaherty/breaks-machine)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Time-stretch drum breaks to target BPMs while preserving transient quality.
 
 Perfect for preparing drum breaks for hardware samplers, live performance, or production workflows where you need breaks at specific tempos.
@@ -50,7 +56,7 @@ pip install breaks-machine
 
 **From source:**
 ```bash
-git clone https://github.com/yourusername/breaks-machine.git
+git clone https://github.com/thomasjohnflaherty/breaks-machine.git
 cd breaks-machine
 uv sync
 ```
@@ -64,7 +70,7 @@ Stretch a break to 140 BPM:
 breaks-machine stretch amen_170.wav --target 140
 ```
 
-Output: `output/amen_170/amen_170_140bpm.wav`
+Output: `output/amen_170/amen_140.wav`
 
 ### Multiple Targets
 
@@ -76,10 +82,10 @@ breaks-machine stretch amen_170.wav --targets 90,120,140,160
 Output:
 ```
 output/amen_170/
-├── amen_170_90bpm.wav
-├── amen_170_120bpm.wav
-├── amen_170_140bpm.wav
-└── amen_170_160bpm.wav
+├── amen_90.wav
+├── amen_120.wav
+├── amen_140.wav
+└── amen_160.wav
 ```
 
 ### BPM Range
