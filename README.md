@@ -311,7 +311,9 @@ Contributions are welcome! Please:
 
 ## License
 
-[Add your license here]
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**Note:** breaks-machine requires Rubberband CLI (GPL v2) as a system dependency. While breaks-machine itself is MIT licensed, you must comply with Rubberband's GPL v2 license when using it.
 
 ## Acknowledgments
 
