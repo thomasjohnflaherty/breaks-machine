@@ -229,25 +229,6 @@ You can adjust with `--crispness {0-6}` (higher = more transient preservation).
    uv run pytest tests
    ```
 
-### Using Devcontainer (Optional)
-
-For zero-friction setup with all dependencies pre-installed:
-
-1. **Install prerequisites**:
-   - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-   - [VS Code](https://code.visualstudio.com/) with [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
-
-2. **Copy devcontainer template**:
-   ```bash
-   cp -r .devcontainer-template .devcontainer
-   ```
-
-3. **Open in container**:
-   - VS Code → Command Palette → "Dev Containers: Reopen in Container"
-   - Wait for build (first time takes a few minutes)
-
-See [.devcontainer-template/README.md](.devcontainer-template/README.md) for details.
-
 ### Running Tests
 
 ```bash

@@ -141,8 +141,6 @@ sudo apt-get install rubberband-cli libsndfile1 ffmpeg
 **Windows:**
 Download from https://breakfastquay.com/rubberband/ and add to PATH.
 
-**Optional: Use devcontainer** - Copy `.devcontainer-template/` to `.devcontainer/` for automatic setup.
-
 ## Quick Reference
 
 ### Common Commands
@@ -184,8 +182,8 @@ breaks-machine stretch break.wav --bpm 175 -t 140
 - `src/breaks_machine/` - Source code
 - `tests/` - Test suite
 - `breaks/` - Test audio files for manual testing
-- `.devcontainer-template/` - Optional devcontainer configuration
 - `.github/workflows/ci.yml` - CI/CD pipeline configuration
+- `.github/workflows/release.yml` - PyPI release automation
 
 ## Detailed Documentation
 
@@ -198,7 +196,7 @@ For more information about the development environment and tooling:
 ## Project Principles
 
 - **Reproducibility**: `uv.lock` ensures identical dependencies across all environments
-- **Standard Python package**: Installable via pip/uv without Docker
-- **Optional devcontainer**: Available for zero-friction setup if preferred
+- **Standard Python package**: Installable via pip/uv
 - **Quality first**: Comprehensive test suite with 58 tests, all passing
 - **Fast feedback**: Linting and formatting enforced in CI/CD
+- **Easy distribution**: Automated PyPI releases on version tags
