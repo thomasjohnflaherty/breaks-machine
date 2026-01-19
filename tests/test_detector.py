@@ -14,23 +14,27 @@ class TestParseBpmFromFilename:
     """Tests for parse_bpm_from_filename function."""
 
     def test_bpm_suffix_lowercase(self):
-        assert parse_bpm_from_filename(Path("break_85bpm.wav")) == 85
+        assert parse_bpm_from_filename(Path("break_140bpm.wav")) == 140
 
     def test_bpm_suffix_uppercase(self):
-        assert parse_bpm_from_filename(Path("break_85BPM.wav")) == 85
+        assert parse_bpm_from_filename(Path("break_140BPM.wav")) == 140
 
     def test_bpm_suffix_with_separator(self):
-        assert parse_bpm_from_filename(Path("break_85-bpm.wav")) == 85
-        assert parse_bpm_from_filename(Path("break_85_bpm.wav")) == 85
-        assert parse_bpm_from_filename(Path("break-85_BPM.flac")) == 85
+        assert parse_bpm_from_filename(Path("break_140-bpm.wav")) == 140
+        assert parse_bpm_from_filename(Path("break_140_bpm.wav")) == 140
+        assert parse_bpm_from_filename(Path("break-140_BPM.flac")) == 140
 
     def test_trailing_number(self):
         assert parse_bpm_from_filename(Path("amen_170.wav")) == 170
         assert parse_bpm_from_filename(Path("think-120.flac")) == 120
 
+    def test_leading_number(self):
+        assert parse_bpm_from_filename(Path("164_HT_Drums_Break3.wav")) == 164
+        assert parse_bpm_from_filename(Path("120-funky_break.flac")) == 120
+
     def test_three_digit_bpm(self):
         assert parse_bpm_from_filename(Path("fast_drum_175bpm.wav")) == 175
-        assert parse_bpm_from_filename(Path("slow_beat_80bpm.wav")) == 80
+        assert parse_bpm_from_filename(Path("slow_beat_90bpm.wav")) == 90
 
     def test_no_bpm_in_filename(self):
         assert parse_bpm_from_filename(Path("drum_loop.wav")) is None

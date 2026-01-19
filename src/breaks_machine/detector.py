@@ -19,7 +19,8 @@ def parse_bpm_from_filename(file_path: Path) -> float | None:
 
     Matches patterns like:
     - amen_170.wav -> 170
-    - break-85bpm.flac -> 85
+    - 164_HT_Drums.wav -> 164
+    - break-140bpm.flac -> 140
     - think_120_BPM.wav -> 120
     - funky_90-bpm.wav -> 90
     - drum_loop_140BPM.wav -> 140
@@ -29,20 +30,30 @@ def parse_bpm_from_filename(file_path: Path) -> float | None:
     filename = file_path.stem
 
     # Pattern: number followed by optional separator and "bpm" (case insensitive)
-    # e.g., "85bpm", "85-bpm", "85_BPM", "85 bpm"
+    # e.g., "140bpm", "140-bpm", "140_BPM", "140 bpm"
     pattern_with_bpm = r"(\d{2,3})[\s_-]?bpm"
     match = re.search(pattern_with_bpm, filename, re.IGNORECASE)
     if match:
-        return float(match.group(1))
+        bpm = float(match.group(1))
+        if 90 <= bpm <= 180:
+            return bpm
+
+    # Pattern: 2-3 digit number at start followed by separator
+    # e.g., "164_HT_Drums", "120-break"
+    pattern_leading = r"^(\d{2,3})[\s_-]"
+    match = re.match(pattern_leading, filename)
+    if match:
+        bpm = float(match.group(1))
+        if 90 <= bpm <= 180:
+            return bpm
 
     # Pattern: underscore/hyphen followed by 2-3 digit number at end or before extension
-    # e.g., "amen_170", "break-85"
+    # e.g., "amen_170", "break-140"
     pattern_trailing = r"[_-](\d{2,3})(?:[_-]|$)"
     match = re.search(pattern_trailing, filename)
     if match:
         bpm = float(match.group(1))
-        # Sanity check: BPM should be in reasonable range (50-250)
-        if 50 <= bpm <= 250:
+        if 90 <= bpm <= 180:
             return bpm
 
     return None
