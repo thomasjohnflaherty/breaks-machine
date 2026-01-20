@@ -81,14 +81,16 @@ uvx ruff check && uvx ruff format --check
 Test with real drum breaks in the `breaks/` directory:
 
 ```bash
-# Test auto-detection
+# Test filename pattern detection (rename file first if needed)
 uv run breaks-machine stretch breaks/FR_Drum_Loop_160.wav -t 140
 
-# Test with manual BPM override
+# Test with manual BPM override (recommended for files without BPM in filename)
 uv run breaks-machine stretch breaks/amen_RUDE.wav --bpm 175 -t 140
 
-# Test batch processing
+# Test batch processing (ensure files have BPM in filename)
 uv run breaks-machine stretch breaks/ --targets 90,120,140 -o test_output/
+
+# Note: Auto-detection is unreliable - always use filename patterns or --bpm flag
 ```
 
 ## Audio Processing Notes
@@ -111,12 +113,20 @@ The `--crispness` parameter (0-6) controls transient preservation:
 
 Recent improvements to `detector.py`:
 
-- **Multi-strategy detection**: Tries multiple tempo priors (120, 140, 170 BPM)
-- **Subdivision correction**: Accounts for common misdetections (half-time, 2/3 time, etc.)
-- **Smart selection**: Prefers direct detections over derived subdivisions
-- **Breakbeat bias**: Favors common breakbeat range (140-180 BPM)
+- **Filename pattern detection** (reliable):
+  - Leading patterns: `164_HT_Drums.wav → 164 BPM`
+  - With "bpm" suffix: `amen-170bpm.wav → 170 BPM`
+  - Trailing patterns: `amen_170.wav → 170 BPM`
+  - Range limited to 90-180 BPM (typical breakbeat range)
 
-This significantly improved accuracy on complex breaks like the Amen break (now detects 172 BPM vs previous 117 BPM).
+- **Auto-detection with librosa** (experimental, often unreliable):
+  - Multi-strategy detection with multiple tempo priors (120, 140, 170 BPM)
+  - Subdivision correction for common misdetections (half-time, 2/3 time, etc.)
+  - Smart selection preferring direct detections over derived subdivisions
+  - Breakbeat bias toward 140-180 BPM range
+  - **Note**: Auto-detection frequently produces incorrect results. Filename patterns or `--bpm` manual override are strongly recommended.
+
+**Development guideline**: When testing, always use files with BPM in the filename or the `--bpm` flag. Do not rely on auto-detection for accurate results.
 
 ### System Dependencies
 

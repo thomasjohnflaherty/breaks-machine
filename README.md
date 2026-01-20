@@ -12,12 +12,12 @@ Perfect for preparing drum breaks for hardware samplers, live performance, or pr
 
 ## Features
 
-- **Automatic BPM Detection**: Intelligently detects tempo from filename patterns or uses librosa for audio analysis
+- **BPM Detection from Filenames**: Automatically parses BPM from common filename patterns (e.g., `amen_170.wav`, `164_break.flac`)
 - **Multiple Target Modes**: Stretch to single BPM, multiple targets, or ranges with custom steps
 - **Batch Processing**: Process entire directories of breaks in one command
 - **High-Quality Stretching**: Uses Rubberband with crispness=5 optimized for transient preservation
 - **Format Conversion**: Optional sample rate, bit depth, and channel conversion
-- **Smart Detection**: Multi-strategy BPM detection with subdivision correction for complex breakbeats
+- **Manual BPM Override**: Specify exact source BPM with `--bpm` flag when needed
 
 ## Requirements
 
@@ -185,13 +185,19 @@ Input Audio → BPM Detection → Time Stretching → Format Conversion → Outp
 
 ### BPM Detection Priority
 
-1. **Manual Override** (`--bpm`): If specified, uses this value
-2. **Filename Parsing**: Looks for patterns like `amen_170.wav`, `break-140bpm.flac`
-3. **Auto-Detection**: Uses librosa with multi-strategy detection:
-   - Tries multiple tempo priors (120, 140, 170 BPM)
-   - Applies subdivision correction for complex breakbeats
-   - Prefers direct detections over derived subdivisions
-   - Biases toward common breakbeat range (140-180 BPM)
+1. **Manual Override** (`--bpm`): If specified, uses this value (most reliable)
+2. **Filename Parsing**: Automatically detects BPM from these patterns:
+   - **With "bpm" suffix**: `amen-170bpm.wav`, `break_140_BPM.flac`, `drum-loop-120bpm.wav`
+   - **Leading number**: `164_HT_Drums.wav`, `140_break.flac`, `120-drums.wav`
+   - **Trailing number**: `amen_170.wav`, `break-140.flac`, `drums_90.wav`
+   - **Range**: Must be 90-180 BPM to avoid false matches
+3. **Auto-Detection** (experimental): Falls back to librosa-based detection if no filename pattern found
+   - **Warning**: Auto-detection is experimental and often produces incorrect results
+   - **Recommended**: Use filename patterns or `--bpm` flag for reliable results
+   - Multi-strategy detection with tempo priors and subdivision correction
+   - May misidentify tempo by factors of 2x, 0.5x, or other subdivisions
+
+**Best Practice**: Name your files with BPM in the filename (e.g., `amen_170.wav`) or use the `--bpm` flag to ensure accurate time-stretching.
 
 ### Rubberband Crispness
 
@@ -206,6 +212,46 @@ You can adjust with `--crispness {0-6}` (higher = more transient preservation).
 
 - **Input**: WAV, FLAC
 - **Output**: Same format as input (or specify conversion options)
+
+## Troubleshooting
+
+### BPM Detection Issues
+
+If breaks-machine cannot detect the BPM or produces incorrect results:
+
+**Problem**: "Could not determine BPM" error
+
+**Solutions**:
+1. **Add BPM to filename** (recommended):
+   ```bash
+   # Rename your file to include BPM
+   mv break.wav break_140.wav
+   breaks-machine stretch break_140.wav -t 120
+   ```
+
+2. **Use manual BPM override**:
+   ```bash
+   breaks-machine stretch break.wav --bpm 140 -t 120
+   ```
+
+**Problem**: Auto-detection finds wrong BPM (e.g., detects 85 BPM instead of 170 BPM)
+
+**Why**: Librosa's tempo detection can be unreliable on drum breaks, often misidentifying tempo by factors of 2x or 0.5x. This appears to be related to the version of the Rubberband CLI tool available (pre-4.0.0).
+
+**Solution**: Always use filename patterns or `--bpm` flag:
+```bash
+# Good filename patterns
+amen_170.wav        # Trailing number
+164_break.flac      # Leading number
+drums-140bpm.wav    # With "bpm" suffix
+
+# Or use manual override
+breaks-machine stretch break.wav --bpm 170 -t 140
+```
+
+**Problem**: Batch processing with mixed BPMs
+
+**Solution**: Ensure all files follow naming conventions or use individual processing with `--bpm` per file.
 
 ## Development
 

@@ -1,6 +1,6 @@
 [project]
 name = "breaks-machine"
-version = "0.1.0"
+version = "0.2.0"
 description = "Time-stretch drum breaks to target BPMs with automatic tempo detection"
 readme = "README.md"
 requires-python = ">=3.13"

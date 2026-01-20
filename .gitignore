@@ -213,6 +213,7 @@ __marimo__/
 .claude/history.jsonl
 .claude/settings.json
 .claude/settings.local.json
+.claude/stats-cache.json
 .claude/cache/
 .claude/debug/
 .claude/file-history/
@@ -228,3 +229,12 @@ __marimo__/
 # Devcontainer (optional for local development, not committed)
 .devcontainer/
 .devcontainer-*/
+
+# Project-specific directories
+breaks/
+output/
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride

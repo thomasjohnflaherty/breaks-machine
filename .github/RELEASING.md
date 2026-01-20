@@ -42,29 +42,33 @@ name = "breaks-machine"
 version = "0.2.0"  # <- Update this
 ```
 
-### 2. Commit Changes
+### 2. Update CHANGELOG.md
+
+Add release notes for the new version following Keep a Changelog format.
+
+### 3. Commit Changes
 
 ```bash
-git add pyproject.toml
+git add pyproject.toml CHANGELOG.md
 git commit -m "Bump version to 0.2.0"
 git push
 ```
 
-### 3. Create and Push Tag
+### 4. Create and Push Tag
 
 ```bash
 git tag v0.2.0
 git push origin v0.2.0
 ```
 
-### 4. Automated Steps
+### 5. Automated Steps
 
 The GitHub Actions workflow will automatically:
 1. ✅ Build the package
 2. ✅ Publish to PyPI
 3. ✅ Create GitHub Release with package files
 
-### 5. Verify Release
+### 6. Verify Release
 
 - Check [PyPI](https://pypi.org/project/breaks-machine/)
 - Check [GitHub Releases](https://github.com/thomasjohnflaherty/breaks-machine/releases)
@@ -78,6 +82,18 @@ Use [Semantic Versioning](https://semver.org/):
 - **Minor** (0.1.0): New features, backwards compatible
 - **Patch** (0.0.1): Bug fixes, backwards compatible
 
+## Pre-Release Checklist
+
+Before releasing any version:
+
+- [ ] **CHANGELOG.md updated** with release notes for this version
+- [ ] **README.md is complete and accurate** for this release
+- [ ] **Documentation reviewed** for accuracy (features, examples, known issues)
+- [ ] All tests passing in CI
+- [ ] Version number updated in `pyproject.toml`
+- [ ] Committed all changes
+- [ ] Ready to tag and push
+
 ## First Release Checklist
 
 Before releasing v0.1.0:
@@ -85,6 +101,7 @@ Before releasing v0.1.0:
 - [ ] PyPI account created and verified
 - [ ] API token created and added to GitHub secrets
 - [ ] README.md is complete and accurate
+- [ ] CHANGELOG.md created with v0.1.0 notes
 - [ ] All tests passing in CI
 - [ ] Version set to `0.1.0` in pyproject.toml
 - [ ] Tag pushed: `git tag v0.1.0 && git push origin v0.1.0`
