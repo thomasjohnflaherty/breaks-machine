@@ -333,7 +333,6 @@ tests/
 
 - **click**: CLI framework
 - **librosa**: Audio analysis and BPM detection
-- **pyrubberband**: Python wrapper for Rubberband
 - **soundfile**: Audio I/O for WAV/FLAC
 
 ### System Requirements

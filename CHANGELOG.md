@@ -5,6 +5,16 @@ All notable changes to breaks-machine will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- **Removed pyrubberband dependency**: Now calls rubberband CLI directly using subprocess
+- Switched from `--time` to `--tempo` flag for cleaner API matching rubberband's native semantics
+- Added early return optimization when ratio == 1.0 (no stretching needed)
+
+### Fixed
+- Corrected ratio parameter docstring (was incorrectly stating >1 = slower)
+
 ## [0.2.0] - 2026-01-20
 
 ### Added

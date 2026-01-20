@@ -1,11 +1,9 @@
 """Time-stretching audio using rubberband."""
 
 import shutil
+import subprocess
 import sys
 from pathlib import Path
-
-import pyrubberband
-import soundfile as sf
 
 
 class RubberbandNotFoundError(Exception):
@@ -46,9 +44,10 @@ def calculate_stretch_ratio(source_bpm: float, target_bpm: float) -> float:
         target_bpm: Desired tempo in BPM
 
     Returns:
-        Stretch ratio for pyrubberband (>1 means faster/shorter, <1 means slower/longer)
+        Stretch ratio as playback rate (>1 = faster, <1 = slower)
+        This matches pyrubberband semantics for API compatibility.
     """
-    # pyrubberband rate: >1 = faster (shorter duration), <1 = slower (longer duration)
+    # Return as playback rate: higher BPM = faster playback rate
     # To go from 170 BPM to 85 BPM (slower), we need rate = 85/170 = 0.5
     # To go from 85 BPM to 170 BPM (faster), we need rate = 170/85 = 2.0
     return target_bpm / source_bpm
@@ -61,38 +60,43 @@ def stretch_audio(
     crispness: int = 5,
 ) -> None:
     """
-    Time-stretch audio file using rubberband.
+    Time-stretch audio file using rubberband CLI directly.
 
     Args:
         input_path: Path to input audio file
         output_path: Path for output audio file
-        ratio: Time stretch ratio (>1 = slower, <1 = faster)
+        ratio: Playback rate (>1 = faster, <1 = slower)
         crispness: Rubberband crispness setting (0-6, default 5 for drums)
                    Higher values preserve transients better.
     """
-    # Load audio
-    y, sr = sf.read(input_path)
-
-    # pyrubberband expects mono or stereo as (samples,) or (samples, channels)
-    # soundfile returns (samples, channels) for stereo, (samples,) for mono
-
-    # Map crispness to pyrubberband options
-    # Crispness 5 = "--crispness 5" which is good for drums
-    # pyrubberband uses rbargs as a dict
-    rbargs = {"--crispness": str(crispness)}
-
-    # Time stretch
-    y_stretched = pyrubberband.time_stretch(y, sr, ratio, rbargs=rbargs)
-
     # Ensure output directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Determine subtype based on input file format
-    input_info = sf.info(input_path)
-    subtype = input_info.subtype
+    # No stretching needed - just copy the file
+    if ratio == 1.0:
+        shutil.copy2(input_path, output_path)
+        return
 
-    # Write output with same format as input
-    sf.write(output_path, y_stretched, sr, subtype=subtype)
+    # Call rubberband CLI directly using --tempo (playback rate)
+    # --tempo 2.0 = double speed (half duration)
+    # --tempo 0.5 = half speed (double duration)
+    result = subprocess.run(
+        [
+            "rubberband",
+            "--tempo",
+            str(ratio),
+            "--crisp",
+            str(crispness),
+            "--quiet",
+            str(input_path),
+            str(output_path),
+        ],
+        capture_output=True,
+        text=True,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(f"rubberband failed: {result.stderr}")
 
 
 def stretch_to_bpm(

@@ -7,7 +7,6 @@ CLI tool for time-stretching drum breaks to target BPMs while preserving transie
 **breaks-machine** is a command-line tool designed to time-stretch drum breaks to specific BPMs using Rubberband's industry-standard algorithm. It's perfect for preparing breaks for hardware samplers, live performance, or production workflows.
 
 **Tech Stack:**
-- **pyrubberband**: Python wrapper for Rubberband time-stretching
 - **librosa**: Audio analysis and BPM detection
 - **soundfile**: Audio I/O for WAV/FLAC files
 - **click**: CLI framework
@@ -27,9 +26,9 @@ CLI tool for time-stretching drum breaks to target BPMs while preserving transie
   - Multi-strategy librosa detection with subdivision correction
   - Priority: manual override → filename → auto-detection
 
-- **[stretcher.py](../../src/breaks_machine/stretcher.py)** - Rubberband wrapper
+- **[stretcher.py](../../src/breaks_machine/stretcher.py)** - Direct rubberband CLI calls
   - Time-stretching with crispness=5 (optimized for drums)
-  - Ratio calculation: `target_bpm / source_bpm`
+  - Uses `--tempo` flag for playback rate control
   - Preserves transients and minimizes phase artifacts
 
 - **[converter.py](../../src/breaks_machine/converter.py)** - Format conversion
