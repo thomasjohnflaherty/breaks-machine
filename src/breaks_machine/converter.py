@@ -1,5 +1,6 @@
 """Audio format conversion utilities."""
 
+import shutil
 from pathlib import Path
 
 import numpy as np
@@ -36,40 +37,50 @@ def convert_audio(
     if output_path is None:
         output_path = input_path
 
-    # Load audio
-    y, sr = sf.read(input_path)
     input_info = sf.info(input_path)
 
-    # Track if any conversion is needed
-    needs_conversion = False
-
-    # Resample if needed
-    if sample_rate is not None and sample_rate != sr:
-        needs_conversion = True
-        # Use soxr for high-quality resampling (installed with librosa)
-        import soxr
-
-        y = soxr.resample(y, sr, sample_rate)
-        sr = sample_rate
-
-    # Convert to mono if needed
-    if mono and len(y.shape) > 1 and y.shape[1] > 1:
-        needs_conversion = True
-        y = np.mean(y, axis=1)
-
-    # Determine output subtype
     if bit_depth is not None:
-        needs_conversion = True
         subtype = BIT_DEPTH_TO_SUBTYPE.get(bit_depth)
         if subtype is None:
             raise ValueError(f"Unsupported bit depth: {bit_depth}. Use 16, 24, or 32.")
     else:
         subtype = input_info.subtype
 
-    # Only write if conversion was needed or output path differs
-    if needs_conversion or output_path != input_path:
-        output_path.parent.mkdir(parents=True, exist_ok=True)
-        sf.write(output_path, y, sr, subtype=subtype)
+    needs_resample = sample_rate is not None and sample_rate != input_info.samplerate
+    needs_mono = mono and input_info.channels > 1
+    needs_subtype = subtype != input_info.subtype
+
+    if not (needs_resample or needs_mono or needs_subtype):
+        if output_path != input_path:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(input_path, output_path)
+        return output_path
+
+    y, sr = sf.read(input_path)
+
+    if needs_resample:
+        # Use soxr for high-quality resampling (installed with librosa)
+        import soxr
+
+        y = soxr.resample(y, sr, sample_rate)
+        sr = sample_rate
+
+    if needs_mono and y.ndim > 1:
+        y = np.mean(y, axis=1)
+
+    # libsndfile wraps out-of-range floats on integer write; normalize only on overflow
+    peak = np.max(np.abs(y))
+    if peak > 1.0:
+        y = y / peak
+
+    if subtype == "PCM_16":
+        rng = np.random.default_rng()
+        lsb = 1.0 / 32768.0
+        y = y + (rng.random(y.shape) + rng.random(y.shape) - 1.0) * lsb
+        y = np.clip(y, -1.0, 1.0)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    sf.write(output_path, y, sr, subtype=subtype)
 
     return output_path
 

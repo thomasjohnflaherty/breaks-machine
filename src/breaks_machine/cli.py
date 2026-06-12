@@ -11,7 +11,12 @@ from .processor import (
     process_directory,
     process_file,
 )
-from .stretcher import RubberbandNotFoundError, check_rubberband_installed
+from .stretcher import (
+    RubberbandNotFoundError,
+    UnsupportedEngineError,
+    check_rubberband_installed,
+    resolve_engine,
+)
 
 
 @click.group()
@@ -85,11 +90,39 @@ def cli():
     help="Warn if detected BPM differs from filename",
 )
 @click.option(
+    "--engine",
+    type=click.Choice(["auto", "r2", "r3"]),
+    default="auto",
+    show_default=True,
+    help="Rubberband engine: auto uses R3 (--fine) when rubberband >= 3, "
+    "r3 forces it, r2 forces the legacy crispness-based engine",
+)
+@click.option(
     "--crispness",
     type=click.IntRange(0, 6),
     default=5,
     show_default=True,
-    help="Rubberband crispness (0-6, higher preserves transients)",
+    help="Rubberband crispness (0-6, higher preserves transients; "
+    "R2 engine only, ignored under R3)",
+)
+@click.option(
+    "--mode",
+    type=click.Choice(["stretch", "repitch", "hybrid", "slice"]),
+    default="hybrid",
+    show_default=True,
+    help="hybrid (default): repitch up to --max-semitones, then stretch the remainder "
+    "(identical to stretch when the tempo change is within 1.4x); "
+    "stretch: time-stretch only (pitch preserved); "
+    "repitch: vinyl-style speed change (pitch follows tempo, no rubberband); "
+    "slice: slice at onsets and re-space on the timeline "
+    "(transients bit-exact on slow-downs, no rubberband)",
+)
+@click.option(
+    "--max-semitones",
+    type=float,
+    default=3.0,
+    show_default=True,
+    help="Maximum repitch amount in semitones (hybrid mode only)",
 )
 def stretch(
     input_path: Path,
@@ -103,7 +136,10 @@ def stretch(
     bit_depth: str | None,
     mono: bool,
     warn: bool,
+    engine: str,
     crispness: int,
+    mode: str,
+    max_semitones: float,
 ):
     """
     Time-stretch audio file(s) to target BPM(s).
@@ -127,11 +163,13 @@ def stretch(
         # With format conversion
         breaks-machine stretch break.wav -t 140 --sample-rate 44100 --mono
     """
-    # Check rubberband is installed
-    try:
-        check_rubberband_installed()
-    except RubberbandNotFoundError as e:
-        raise click.ClickException(str(e)) from None
+    # Repitch and slice modes never call rubberband
+    if mode not in ("repitch", "slice"):
+        try:
+            check_rubberband_installed()
+            resolve_engine(engine)
+        except (RubberbandNotFoundError, UnsupportedEngineError) as e:
+            raise click.ClickException(str(e)) from None
 
     # Parse targets
     try:
@@ -147,6 +185,9 @@ def stretch(
         mono=mono,
         warn=warn,
         crispness=crispness,
+        engine=engine,
+        mode=mode,
+        max_semitones=max_semitones,
     )
 
     click.echo(f"Target BPM(s): {', '.join(str(int(t)) for t in target_bpms)}")

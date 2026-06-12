@@ -15,7 +15,7 @@ Perfect for preparing drum breaks for hardware samplers, live performance, or pr
 - **BPM Detection from Filenames**: Automatically parses BPM from common filename patterns (e.g., `amen_170.wav`, `164_break.flac`)
 - **Multiple Target Modes**: Stretch to single BPM, multiple targets, or ranges with custom steps
 - **Batch Processing**: Process entire directories of breaks in one command
-- **High-Quality Stretching**: Uses Rubberband with crispness=5 optimized for transient preservation
+- **High-Quality Stretching**: Uses Rubberband's R3 engine (`--fine --centre-focus`) by default, the best option for percussive material
 - **Format Conversion**: Optional sample rate, bit depth, and channel conversion
 - **Manual BPM Override**: Specify exact source BPM with `--bpm` flag when needed
 
@@ -141,8 +141,17 @@ breaks-machine stretch INPUT_PATH [OPTIONS]
 - `--mono`: Convert to mono
 
 **Stretching**:
-- `--crispness {0-6}`: Rubberband crispness (default: 5, higher preserves transients)
+- `--mode {stretch,repitch,hybrid,slice}`: Processing mode (default: hybrid)
+  - `hybrid` (default): repitch by up to `--max-semitones`, then time-stretch the remainder — splits the artifact load between pitch change and stretching. For moderate tempo changes (within 1.4x) it skips the repitch entirely and behaves identically to `stretch`
+  - `stretch`: time-stretch with rubberband, pitch preserved
+  - `repitch`: vinyl-style speed change via resampling — pitch follows tempo (slowing 170→90 drops ~11 semitones), no rubberband involved
+  - `slice`: slice-and-shift (the ReCycle/jungle method) — cuts at detected onsets and moves slices on the timeline instead of stretching them. On slow-downs every transient is reproduced bit-exact; gaps open between hits and each slice's natural decay rings into them. Splice points are crossfaded, no rubberband involved
+- `--max-semitones N`: Maximum repitch amount in semitones for hybrid mode (default: 3.0)
+- `--engine {auto,r2,r3}`: Rubberband engine (default: auto). `auto` uses R3 when rubberband >= 3, `r3` forces it (errors on older rubberband), `r2` forces the legacy crispness-based engine
+- `--crispness {0-6}`: Rubberband crispness (default: 5, higher preserves transients). **R2 engine only** — ignored under R3
 - `-s, --step N`: Step size for range mode (default: 10)
+
+All modes use the same output filename (`amen_90.wav`) regardless of `--mode`.
 
 ### Examples
 
@@ -162,6 +171,24 @@ breaks-machine stretch break.wav --range 100-140 --step 5
 ```bash
 # Convert to 44.1kHz mono 16-bit
 breaks-machine stretch break.wav -t 140 --sample-rate 44100 --bit-depth 16 --mono
+```
+
+**Stretch modes**:
+```bash
+# Hybrid (default): repitch up to 3 semitones, stretch the rest
+breaks-machine stretch amen_170.wav -t 90
+
+# Hybrid with a tighter pitch budget
+breaks-machine stretch amen_170.wav -t 90 --max-semitones 2
+
+# Pure time-stretch (pitch preserved)
+breaks-machine stretch amen_170.wav -t 90 --mode stretch
+
+# Vinyl-style repitch (pitch drops with tempo, no stretch artifacts)
+breaks-machine stretch amen_170.wav -t 90 --mode repitch
+
+# Slice-and-shift (transients untouched, gaps open between hits)
+breaks-machine stretch amen_170.wav -t 90 --mode slice
 ```
 
 **Batch processing**:
@@ -189,7 +216,7 @@ Input Audio → BPM Detection → Time Stretching → Format Conversion → Outp
 2. **Filename Parsing**: Automatically detects BPM from these patterns:
    - **With "bpm" suffix**: `amen-170bpm.wav`, `break_140_BPM.flac`, `drum-loop-120bpm.wav`
    - **Leading number**: `164_HT_Drums.wav`, `140_break.flac`, `120-drums.wav`
-   - **Trailing number**: `amen_170.wav`, `break-140.flac`, `drums_90.wav`
+   - **Trailing number**: `amen_170.wav`, `break-140.flac`, `Hydro Break 170.wav`
    - **Range**: Must be 90-180 BPM to avoid false matches
 3. **Auto-Detection** (experimental): Falls back to librosa-based detection if no filename pattern found
    - **Warning**: Auto-detection is experimental and often produces incorrect results
@@ -199,14 +226,16 @@ Input Audio → BPM Detection → Time Stretching → Format Conversion → Outp
 
 **Best Practice**: Name your files with BPM in the filename (e.g., `amen_170.wav`) or use the `--bpm` flag to ensure accurate time-stretching.
 
-### Rubberband Crispness
+### Rubberband Engines
 
-The tool uses crispness=5 by default, which:
+With rubberband 3.0 or newer (default `--engine auto`), the tool uses the **R3 engine** via `--fine --centre-focus` — Breakfastquay's max-quality offline recipe. R3 is markedly better than R2 for percussive material at large stretch ratios, and it has no crispness control: `--crispness` is ignored under R3.
+
+With older rubberband (or `--engine r2`), the tool falls back to the legacy **R2 engine** with crispness=5, which:
 - Preserves transients (drum hits)
 - Minimizes phase artifacts
-- Optimized for percussive material
+- Is optimized for percussive material
 
-You can adjust with `--crispness {0-6}` (higher = more transient preservation).
+On the R2 path you can adjust with `--crispness {0-6}` (higher = more transient preservation). Force a specific engine with `--engine r2` or `--engine r3` (`r3` errors clearly if your rubberband is older than 3).
 
 ## Supported Formats
 

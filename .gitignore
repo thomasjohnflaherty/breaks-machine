@@ -225,6 +225,9 @@ __marimo__/
 .claude/shell-snapshots/
 .claude/statsig/
 .claude/todos/
+.claude/.last-cleanup
+.claude/backups/
+.claude/sessions/
 
 # Devcontainer (optional for local development, not committed)
 .devcontainer/
@@ -233,6 +236,7 @@ __marimo__/
 # Project-specific directories
 breaks/
 output/
+outputs/
 
 # macOS system files
 .DS_Store

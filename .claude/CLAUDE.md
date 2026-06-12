@@ -27,9 +27,20 @@ CLI tool for time-stretching drum breaks to target BPMs while preserving transie
   - Priority: manual override → filename → auto-detection
 
 - **[stretcher.py](../../src/breaks_machine/stretcher.py)** - Direct rubberband CLI calls
-  - Time-stretching with crispness=5 (optimized for drums)
+  - R3 engine (`--fine --centre-focus`) by default when rubberband >= 3
+  - Falls back to R2 with crispness=5 on older rubberband (or `--engine r2`)
   - Uses `--tempo` flag for playback rate control
   - Preserves transients and minimizes phase artifacts
+
+- **[repitch.py](../../src/breaks_machine/repitch.py)** - Repitch and hybrid modes
+  - `repitch`: vinyl-style speed change via resampling (pitch follows tempo)
+  - `hybrid` (default mode): repitch up to `--max-semitones` (default 3.0), then stretch the remainder
+  - Hybrid skips the repitch and behaves identically to `stretch` when the tempo change is within 1.4x
+
+- **[slicer.py](../../src/breaks_machine/slicer.py)** - Slice mode (slice-and-shift, the ReCycle/jungle method)
+  - Cuts at librosa-detected onsets (backtracked), snapped to a 16th-note grid of the known source BPM for placement
+  - Slices are moved on the timeline, not stretched — transients bit-exact on slow-downs, no rubberband
+  - Equal-power crossfades/fade-outs at every splice point; falls back to 8th-note grid slicing when onsets are undetectable
 
 - **[converter.py](../../src/breaks_machine/converter.py)** - Format conversion
   - Optional sample rate conversion
@@ -38,7 +49,7 @@ CLI tool for time-stretching drum breaks to target BPMs while preserving transie
 
 - **[processor.py](../../src/breaks_machine/processor.py)** - Pipeline orchestration
   - Single file and batch directory processing
-  - Output structure: `output/{filename}/{basename}_{bpm}.{ext}`
+  - Output structure: `output/{filename}/{basename}_{bpm}.{ext}` (same for all modes)
   - Target parsing (single, multiple, range modes)
 
 ## Development Workflow
@@ -99,9 +110,15 @@ uv run breaks-machine stretch breaks/ --targets 90,120,140 -o test_output/
 - **Input**: WAV, FLAC
 - **Output**: Same format as input (preserves original format by default)
 
-### Rubberband Crispness Settings
+### Rubberband Engine Selection
 
-The `--crispness` parameter (0-6) controls transient preservation:
+The `--engine` parameter (auto/r2/r3, default auto) selects the rubberband engine:
+
+- **auto**: R3 (`--fine --centre-focus`) when rubberband >= 3, otherwise R2 — R3 is markedly better for percussive material at large stretch ratios
+- **r3**: Force R3 (errors clearly if rubberband < 3)
+- **r2**: Force the legacy R2 engine with crispness control
+
+The `--crispness` parameter (0-6) controls transient preservation on the **R2 engine only** (no-op under R3):
 
 - **0-2**: Smoother, less transient preservation (not ideal for drums)
 - **3-4**: Balanced
@@ -115,7 +132,7 @@ Recent improvements to `detector.py`:
 - **Filename pattern detection** (reliable):
   - Leading patterns: `164_HT_Drums.wav → 164 BPM`
   - With "bpm" suffix: `amen-170bpm.wav → 170 BPM`
-  - Trailing patterns: `amen_170.wav → 170 BPM`
+  - Trailing patterns: `amen_170.wav → 170 BPM`, `Hydro Break 170.wav → 170 BPM`
   - Range limited to 90-180 BPM (typical breakbeat range)
 
 - **Auto-detection with librosa** (experimental, often unreliable):
@@ -206,6 +223,6 @@ For more information about the development environment and tooling:
 
 - **Reproducibility**: `uv.lock` ensures identical dependencies across all environments
 - **Standard Python package**: Installable via pip/uv
-- **Quality first**: Comprehensive test suite with 58 tests, all passing
+- **Quality first**: Comprehensive test suite with 121 tests, all passing
 - **Fast feedback**: Linting and formatting enforced in CI/CD
 - **Easy distribution**: Automated PyPI releases on version tags
