@@ -50,9 +50,9 @@ def strip_bpm_from_filename(filename: str) -> str:
     pattern_with_bpm = r"[\s_-]?(\d{2,3})[\s_-]?bpm"
     result = re.sub(pattern_with_bpm, "", filename, flags=re.IGNORECASE)
 
-    # Pattern 2: underscore/hyphen followed by 2-3 digit number at end
-    # e.g., "_170", "-85" at the end
-    pattern_trailing = r"[_-](\d{2,3})$"
+    # Pattern 2: space/underscore/hyphen followed by 2-3 digit number at end
+    # e.g., "_170", "-85", " 160" at the end
+    pattern_trailing = r"[\s_-](\d{2,3})$"
     result = re.sub(pattern_trailing, "", result)
 
     return result

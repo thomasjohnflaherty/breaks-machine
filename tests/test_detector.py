@@ -36,6 +36,14 @@ class TestParseBpmFromFilename:
         assert parse_bpm_from_filename(Path("fast_drum_175bpm.wav")) == 175
         assert parse_bpm_from_filename(Path("slow_beat_90bpm.wav")) == 90
 
+    def test_space_separated_trailing_number(self):
+        assert parse_bpm_from_filename(Path("Hydro Break 170.wav")) == 170
+        assert parse_bpm_from_filename(Path("Bibop Break 160.wav")) == 160
+        assert parse_bpm_from_filename(Path("Snap Break 165.wav")) == 165
+
+    def test_trailing_number_after_word_and_digit(self):
+        assert parse_bpm_from_filename(Path("Treasure on Mars DnB 2_160.wav")) == 160
+
     def test_no_bpm_in_filename(self):
         assert parse_bpm_from_filename(Path("drum_loop.wav")) is None
         assert parse_bpm_from_filename(Path("amen_break.flac")) is None

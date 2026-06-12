@@ -24,6 +24,7 @@ def parse_bpm_from_filename(file_path: Path) -> float | None:
     - think_120_BPM.wav -> 120
     - funky_90-bpm.wav -> 90
     - drum_loop_140BPM.wav -> 140
+    - Hydro Break 170.wav -> 170
 
     Returns None if no BPM found in filename.
     """
@@ -47,9 +48,9 @@ def parse_bpm_from_filename(file_path: Path) -> float | None:
         if 90 <= bpm <= 180:
             return bpm
 
-    # Pattern: underscore/hyphen followed by 2-3 digit number at end or before extension
-    # e.g., "amen_170", "break-140"
-    pattern_trailing = r"[_-](\d{2,3})(?:[_-]|$)"
+    # Pattern: space/underscore/hyphen followed by 2-3 digit number at end or before extension
+    # e.g., "amen_170", "break-140", "Hydro Break 170"
+    pattern_trailing = r"[\s_-](\d{2,3})(?:[\s_-]|$)"
     match = re.search(pattern_trailing, filename)
     if match:
         bpm = float(match.group(1))
