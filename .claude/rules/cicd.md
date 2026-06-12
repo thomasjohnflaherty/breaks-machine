@@ -15,7 +15,7 @@ Job: Lint, Format Check, and Test
   ↓
 2. Setup Python (actions/setup-python@v6)
   ↓
-3. Install uv (astral-sh/setup-uv@v8 with caching)
+3. Install uv (astral-sh/setup-uv@v8.2.0 with caching)
   ↓
 4. Lint (uvx ruff check)
   ↓
@@ -28,7 +28,7 @@ Job: Lint, Format Check, and Test
 
 - **Runner**: `ubuntu-latest` (Ubuntu 22.04 with Python pre-installed)
 - **Python setup**: Via `actions/setup-python@v6` reading `.python-version`
-- **uv setup**: Via official `astral-sh/setup-uv@v8` action
+- **uv setup**: Via official `astral-sh/setup-uv@v8.2.0` action
 - **Consistency**: Uses same uv commands as local development
 - **Lock file**: Uses `uv.lock` for reproducible dependencies
 - **Caching**: Built-in uv cache via `enable-cache: true`
@@ -59,7 +59,7 @@ jobs:
           python-version-file: ".python-version"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v8
+        uses: astral-sh/setup-uv@v8.2.0
         with:
           version: "0.11.21"
           enable-cache: true
@@ -98,7 +98,7 @@ Installs Python 3.13 by reading the `.python-version` file. Uses GitHub's pre-ca
 ### Step 3: Install uv
 ```yaml
 - name: Install uv
-  uses: astral-sh/setup-uv@v8
+  uses: astral-sh/setup-uv@v8.2.0
   with:
     version: "0.11.21"
     enable-cache: true
@@ -193,7 +193,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version-file: ".python-version"
-      - uses: astral-sh/setup-uv@v8
+      - uses: astral-sh/setup-uv@v8.2.0
         with:
           enable-cache: true
       - run: uv run pytest tests
@@ -212,7 +212,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: astral-sh/setup-uv@v8
+      - uses: astral-sh/setup-uv@v8.2.0
         with:
           enable-cache: true
       - run: uv run pytest tests
@@ -237,7 +237,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version-file: ".python-version"
-      - uses: astral-sh/setup-uv@v8
+      - uses: astral-sh/setup-uv@v8.2.0
         with:
           enable-cache: true
       - name: Run tests with secrets
@@ -283,7 +283,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: ${{ inputs.python-version }}
-      - uses: astral-sh/setup-uv@v8
+      - uses: astral-sh/setup-uv@v8.2.0
         with:
           enable-cache: true
       - run: uv run pytest tests
@@ -328,7 +328,7 @@ git push
 
 Check workflow logs for cache hit/miss messages:
 ```
-Run astral-sh/setup-uv@v8
+Run astral-sh/setup-uv@v8.2.0
   Cache hit: ~/.cache/uv
 ```
 
