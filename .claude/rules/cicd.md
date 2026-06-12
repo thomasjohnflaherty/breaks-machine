@@ -11,11 +11,11 @@ Trigger (push to any branch, pull request to main)
   ↓
 Job: Lint, Format Check, and Test
   ↓
-1. Checkout code (actions/checkout@v4)
+1. Checkout code (actions/checkout@v6)
   ↓
-2. Setup Python (actions/setup-python@v5)
+2. Setup Python (actions/setup-python@v6)
   ↓
-3. Install uv (astral-sh/setup-uv@v7 with caching)
+3. Install uv (astral-sh/setup-uv@v8 with caching)
   ↓
 4. Lint (uvx ruff check)
   ↓
@@ -27,8 +27,8 @@ Job: Lint, Format Check, and Test
 ### Key Characteristics
 
 - **Runner**: `ubuntu-latest` (Ubuntu 22.04 with Python pre-installed)
-- **Python setup**: Via `actions/setup-python@v5` reading `.python-version`
-- **uv setup**: Via official `astral-sh/setup-uv@v7` action
+- **Python setup**: Via `actions/setup-python@v6` reading `.python-version`
+- **uv setup**: Via official `astral-sh/setup-uv@v8` action
 - **Consistency**: Uses same uv commands as local development
 - **Lock file**: Uses `uv.lock` for reproducible dependencies
 - **Caching**: Built-in uv cache via `enable-cache: true`
@@ -51,17 +51,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version-file: ".python-version"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v8
         with:
-          version: "0.9.22"
+          version: "0.11.21"
           enable-cache: true
 
       - name: Verify uv installation
@@ -82,14 +82,14 @@ jobs:
 ### Step 1: Checkout Code
 ```yaml
 - name: Checkout code
-  uses: actions/checkout@v4
+  uses: actions/checkout@v6
 ```
 Clones the repository code into the runner workspace.
 
 ### Step 2: Set up Python
 ```yaml
 - name: Set up Python
-  uses: actions/setup-python@v5
+  uses: actions/setup-python@v6
   with:
     python-version-file: ".python-version"
 ```
@@ -98,9 +98,9 @@ Installs Python 3.13 by reading the `.python-version` file. Uses GitHub's pre-ca
 ### Step 3: Install uv
 ```yaml
 - name: Install uv
-  uses: astral-sh/setup-uv@v7
+  uses: astral-sh/setup-uv@v8
   with:
-    version: "0.9.22"
+    version: "0.11.21"
     enable-cache: true
 ```
 Installs uv package manager with version pinning and automatic caching enabled.
@@ -172,7 +172,7 @@ jobs:
     name: Release build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: docker build -t myapp:${{ github.ref_name }} .
 ```
 
@@ -189,11 +189,11 @@ jobs:
     name: Nightly tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version-file: ".python-version"
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v8
         with:
           enable-cache: true
       - run: uv run pytest tests
@@ -208,11 +208,11 @@ jobs:
       matrix:
         python-version: ["3.11", "3.12", "3.13"]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v8
         with:
           enable-cache: true
       - run: uv run pytest tests
@@ -233,11 +233,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version-file: ".python-version"
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v8
         with:
           enable-cache: true
       - name: Run tests with secrets
@@ -257,7 +257,7 @@ jobs:
       DEBUG: "true"
       ENVIRONMENT: "ci"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - run: uv run pytest tests  # DEBUG and ENVIRONMENT available
 ```
 
@@ -279,11 +279,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: ${{ inputs.python-version }}
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@v8
         with:
           enable-cache: true
       - run: uv run pytest tests
@@ -328,7 +328,7 @@ git push
 
 Check workflow logs for cache hit/miss messages:
 ```
-Run astral-sh/setup-uv@v7
+Run astral-sh/setup-uv@v8
   Cache hit: ~/.cache/uv
 ```
 

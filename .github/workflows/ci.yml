@@ -17,17 +17,17 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version-file: ".python-version"
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@v8
         with:
-          version: "0.9.22"
+          version: "0.11.21"
           enable-cache: true
 
       - name: Verify uv installation
@@ -46,7 +46,7 @@ jobs:
         run: uv run pytest tests --cov=src/breaks_machine --cov-report=xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v7
         with:
-          file: ./coverage.xml
+          files: ./coverage.xml
           fail_ci_if_error: false
