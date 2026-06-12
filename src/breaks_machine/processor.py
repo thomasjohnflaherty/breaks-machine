@@ -7,6 +7,8 @@ from pathlib import Path
 
 from .converter import convert_audio
 from .detector import get_source_bpm
+from .repitch import hybrid_to_bpm, repitch_to_bpm
+from .slicer import slice_to_bpm
 from .stretcher import stretch_to_bpm
 
 # Supported audio extensions
@@ -28,6 +30,9 @@ class ProcessingOptions:
     mono: bool = False
     warn: bool = False
     crispness: int = 5
+    engine: str = "auto"
+    mode: str = "hybrid"
+    max_semitones: float = 3.0
 
 
 def is_audio_file(path: Path) -> bool:
@@ -120,16 +125,31 @@ def process_file(
 
     for target_bpm in targets:
         output_path = generate_output_path(input_path, output_dir, target_bpm)
-        echo(f"  Stretching to {int(target_bpm)} BPM -> {output_path}")
+        echo(f"  Processing to {int(target_bpm)} BPM ({options.mode}) -> {output_path}")
 
-        # Time stretch
-        stretch_to_bpm(
-            input_path,
-            output_path,
-            source_bpm,
-            target_bpm,
-            crispness=options.crispness,
-        )
+        if options.mode == "repitch":
+            repitch_to_bpm(input_path, output_path, source_bpm, target_bpm)
+        elif options.mode == "slice":
+            slice_to_bpm(input_path, output_path, source_bpm, target_bpm)
+        elif options.mode == "hybrid":
+            hybrid_to_bpm(
+                input_path,
+                output_path,
+                source_bpm,
+                target_bpm,
+                max_semitones=options.max_semitones,
+                crispness=options.crispness,
+                engine=options.engine,
+            )
+        else:
+            stretch_to_bpm(
+                input_path,
+                output_path,
+                source_bpm,
+                target_bpm,
+                crispness=options.crispness,
+                engine=options.engine,
+            )
 
         # Apply format conversion if any options specified
         if options.sample_rate or options.bit_depth or options.mono:

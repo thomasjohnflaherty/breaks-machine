@@ -9,6 +9,7 @@ from breaks_machine.processor import (
     generate_output_path,
     is_audio_file,
     parse_targets,
+    process_file,
 )
 
 
@@ -66,6 +67,11 @@ class TestGenerateOutputPath:
 
         assert result == Path("/output/test/test_120.wav")
 
+    def test_no_mode_suffix(self):
+        """All modes share the same plain naming convention."""
+        result = generate_output_path(Path("/input/amen_170.wav"), Path("/output"), 90)
+        assert result == Path("/output/amen_170/amen_90.wav")
+
 
 class TestParseTargets:
     """Tests for target BPM parsing."""
@@ -106,6 +112,75 @@ class TestParseTargets:
             parse_targets(None, None, "80-100-120", 10)
 
 
+class TestProcessFileEngine:
+    """Tests for engine threading through process_file."""
+
+    def test_engine_passed_to_stretcher(self, temp_audio_file, tmp_path, monkeypatch):
+        """Engine option should reach stretch_to_bpm."""
+        calls = []
+
+        def fake_stretch_to_bpm(input_path, output_path, source, target, **kwargs):
+            calls.append(kwargs)
+
+        monkeypatch.setattr("breaks_machine.processor.stretch_to_bpm", fake_stretch_to_bpm)
+
+        options = ProcessingOptions(manual_bpm=120, engine="r2", crispness=3, mode="stretch")
+        process_file(temp_audio_file, [90.0], tmp_path / "out", options)
+
+        assert calls == [{"crispness": 3, "engine": "r2"}]
+
+
+class TestProcessFileMode:
+    """Tests for mode dispatch in process_file."""
+
+    def test_repitch_mode_dispatch(self, temp_audio_file, tmp_path, monkeypatch):
+        """Repitch mode should call repitch_to_bpm."""
+        calls = []
+
+        def fake_repitch_to_bpm(input_path, output_path, source, target):
+            calls.append((output_path, source, target))
+
+        monkeypatch.setattr("breaks_machine.processor.repitch_to_bpm", fake_repitch_to_bpm)
+
+        options = ProcessingOptions(manual_bpm=120, mode="repitch")
+        outputs = process_file(temp_audio_file, [90.0], tmp_path / "out", options)
+
+        assert len(calls) == 1
+        assert calls[0][1:] == (120, 90.0)
+        assert outputs[0].name.endswith("_90.wav")
+
+    def test_slice_mode_dispatch(self, temp_audio_file, tmp_path, monkeypatch):
+        """Slice mode should call slice_to_bpm."""
+        calls = []
+
+        def fake_slice_to_bpm(input_path, output_path, source, target):
+            calls.append((output_path, source, target))
+
+        monkeypatch.setattr("breaks_machine.processor.slice_to_bpm", fake_slice_to_bpm)
+
+        options = ProcessingOptions(manual_bpm=120, mode="slice")
+        outputs = process_file(temp_audio_file, [90.0], tmp_path / "out", options)
+
+        assert len(calls) == 1
+        assert calls[0][1:] == (120, 90.0)
+        assert outputs[0].name.endswith("_90.wav")
+
+    def test_hybrid_mode_dispatch(self, temp_audio_file, tmp_path, monkeypatch):
+        """Hybrid mode should call hybrid_to_bpm with max_semitones."""
+        calls = []
+
+        def fake_hybrid_to_bpm(input_path, output_path, source, target, **kwargs):
+            calls.append(kwargs)
+
+        monkeypatch.setattr("breaks_machine.processor.hybrid_to_bpm", fake_hybrid_to_bpm)
+
+        options = ProcessingOptions(manual_bpm=120, mode="hybrid", max_semitones=2.5)
+        outputs = process_file(temp_audio_file, [90.0], tmp_path / "out", options)
+
+        assert calls == [{"max_semitones": 2.5, "crispness": 5, "engine": "auto"}]
+        assert outputs[0].name.endswith("_90.wav")
+
+
 class TestProcessingOptions:
     """Tests for ProcessingOptions dataclass."""
 
@@ -119,6 +194,9 @@ class TestProcessingOptions:
         assert options.mono is False
         assert options.warn is False
         assert options.crispness == 5
+        assert options.engine == "auto"
+        assert options.mode == "hybrid"
+        assert options.max_semitones == 3.0
 
     def test_custom_values(self):
         """Test custom values."""
@@ -129,6 +207,7 @@ class TestProcessingOptions:
             mono=True,
             warn=True,
             crispness=6,
+            engine="r2",
         )
 
         assert options.manual_bpm == 120
@@ -137,3 +216,4 @@ class TestProcessingOptions:
         assert options.mono is True
         assert options.warn is True
         assert options.crispness == 6
+        assert options.engine == "r2"

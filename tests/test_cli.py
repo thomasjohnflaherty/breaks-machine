@@ -21,6 +21,12 @@ class TestCliStretch:
         assert result.exit_code == 0
         assert "Time-stretch audio file" in result.output
 
+    def test_default_mode_is_hybrid(self, runner):
+        """Help output advertises hybrid as the default mode."""
+        result = runner.invoke(cli, ["stretch", "--help"])
+        assert result.exit_code == 0
+        assert "[default: hybrid]" in result.output
+
     def test_version(self, runner):
         """Test that version works."""
         result = runner.invoke(cli, ["--version"])
@@ -51,7 +57,6 @@ class TestCliStretch:
         assert result.exit_code == 0, f"CLI failed: {result.output}"
         assert "Created 1 file" in result.output
 
-        # Check output file exists
         expected_output = output_dir / "amen_170" / "amen_120.wav"
         assert expected_output.exists()
 
@@ -136,6 +141,172 @@ class TestCliStretch:
         )
 
         assert result.exit_code == 0, f"CLI failed: {result.output}"
+
+    def test_engine_r2(self, runner, temp_audio_file_170bpm, tmp_path):
+        """Test forcing the legacy R2 engine."""
+        output_dir = tmp_path / "output"
+
+        result = runner.invoke(
+            cli,
+            [
+                "stretch",
+                str(temp_audio_file_170bpm),
+                "--target",
+                "120",
+                "--engine",
+                "r2",
+                "--output",
+                str(output_dir),
+            ],
+        )
+
+        assert result.exit_code == 0, f"CLI failed: {result.output}"
+        assert "Created 1 file" in result.output
+
+    def test_engine_r3_requires_rubberband_3(
+        self, runner, temp_audio_file_170bpm, tmp_path, monkeypatch
+    ):
+        """Forcing r3 with rubberband < 3 should error clearly."""
+        monkeypatch.setattr("breaks_machine.stretcher.get_rubberband_major_version", lambda: 2)
+
+        result = runner.invoke(
+            cli,
+            [
+                "stretch",
+                str(temp_audio_file_170bpm),
+                "--target",
+                "120",
+                "--engine",
+                "r3",
+                "--output",
+                str(tmp_path / "output"),
+            ],
+        )
+
+        assert result.exit_code != 0
+        assert "requires rubberband >= 3" in result.output
+
+    def test_invalid_engine(self, runner, temp_audio_file_170bpm):
+        """Invalid engine choice should be rejected."""
+        result = runner.invoke(
+            cli,
+            [
+                "stretch",
+                str(temp_audio_file_170bpm),
+                "--target",
+                "120",
+                "--engine",
+                "r4",
+            ],
+        )
+
+        assert result.exit_code != 0
+
+    def test_mode_repitch(self, runner, temp_audio_file_170bpm, tmp_path):
+        """Repitch mode creates a file with vinyl-style duration."""
+        import soundfile as sf
+
+        output_dir = tmp_path / "output"
+
+        result = runner.invoke(
+            cli,
+            [
+                "stretch",
+                str(temp_audio_file_170bpm),
+                "--target",
+                "90",
+                "--mode",
+                "repitch",
+                "--output",
+                str(output_dir),
+            ],
+        )
+
+        assert result.exit_code == 0, f"CLI failed: {result.output}"
+        expected_output = output_dir / "amen_170" / "amen_90.wav"
+        assert expected_output.exists()
+        assert abs(sf.info(expected_output).duration - 170 / 90) < 0.02
+
+    def test_mode_slice(self, runner, temp_audio_file_170bpm, tmp_path):
+        """Slice mode creates a re-spaced file without rubberband."""
+        import soundfile as sf
+
+        output_dir = tmp_path / "output"
+
+        result = runner.invoke(
+            cli,
+            [
+                "stretch",
+                str(temp_audio_file_170bpm),
+                "--target",
+                "90",
+                "--mode",
+                "slice",
+                "--output",
+                str(output_dir),
+            ],
+        )
+
+        assert result.exit_code == 0, f"CLI failed: {result.output}"
+        expected_output = output_dir / "amen_170" / "amen_90.wav"
+        assert expected_output.exists()
+        assert abs(sf.info(expected_output).duration - 170 / 90) < 0.02
+
+    def test_mode_hybrid(self, runner, temp_audio_file_170bpm, tmp_path, monkeypatch):
+        """Hybrid mode stretches the residual factor after repitching."""
+        import shutil
+        import subprocess
+
+        monkeypatch.setattr("breaks_machine.stretcher.get_rubberband_major_version", lambda: 4)
+
+        commands = []
+
+        def fake_run(cmd, capture_output, text):
+            commands.append(cmd)
+            shutil.copy(cmd[-2], cmd[-1])
+            return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
+
+        monkeypatch.setattr("breaks_machine.stretcher.subprocess.run", fake_run)
+
+        output_dir = tmp_path / "output"
+
+        result = runner.invoke(
+            cli,
+            [
+                "stretch",
+                str(temp_audio_file_170bpm),
+                "--target",
+                "90",
+                "--mode",
+                "hybrid",
+                "--max-semitones",
+                "3.0",
+                "--output",
+                str(output_dir),
+            ],
+        )
+
+        assert result.exit_code == 0, f"CLI failed: {result.output}"
+        assert (output_dir / "amen_170" / "amen_90.wav").exists()
+        assert len(commands) == 1
+        tempo = float(commands[0][commands[0].index("--tempo") + 1])
+        assert abs(tempo - (90 / 170) / 2 ** (-3 / 12)) < 0.001
+
+    def test_invalid_mode(self, runner, temp_audio_file_170bpm):
+        """Invalid mode choice should be rejected."""
+        result = runner.invoke(
+            cli,
+            [
+                "stretch",
+                str(temp_audio_file_170bpm),
+                "--target",
+                "90",
+                "--mode",
+                "warp",
+            ],
+        )
+
+        assert result.exit_code != 0
 
     def test_unsupported_format(self, runner, tmp_path):
         """Test that unsupported formats give error."""
